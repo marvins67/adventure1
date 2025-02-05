@@ -1,5 +1,6 @@
 package com.iterevg.game.adventure1.graphics;
 
+import com.iterevg.game.adventure1.Actor;
 import com.iterevg.game.adventure1.Constants;
 
 import javax.swing.*;
@@ -19,25 +20,34 @@ public class ScreenRenderer extends JPanel {
         this.fps = fps;
     }
 
-    public void drawSprite(Sprite sprite) {
-        drawSprite(sprite.getImage(), sprite.getX(), sprite.getY(), sprite.getFrame());
-    }
-
-    private void drawSprite(Image image, int ox, int oy, int frame) {
+    public void drawActor(Actor actor) {
         for (int i = 0; i < Constants.SPR_SIZE; i++) {
-            // MAGENTA = Transparence
-            int q = i / SPR_WIDTH;
-            int r = i % SPR_WIDTH;
-            int rp = (image.getWidth() * q) + r + (frame * SPR_WIDTH);
-            Pixel p = image.getPixels()[rp];
-            if (p.getRgbValue() != Color.MAGENTA.getRGB()) {
-                int nx = (p.getX() % SPR_WIDTH) + ox;
-                int ny = p.getY() + oy;
-                if (nx >= 0 && nx < GAME_WIDTH && ny >= 0 && ny < GAME_HEIGHT) {
+            Pixel p = getPixelFromRank(actor.getSprite(), i);
+            if (!pixelTransparent(p)) {
+                //int nx = (p.getPosition().getX() % actor.getSpriteWR().getWidth()) + actor.getPosition().getX();
+                //int ny = p.getPosition().getY() + actor.getPosition().getY();
+                int nx = i % actor.getSprite().getWidth() + actor.getPosition().getX();
+                int ny = i / actor.getSprite().getHeight() + actor.getPosition().getY();
+                if (positionInScreen(nx, ny)) {
                     bufferedImage.setRGB(nx, ny, p.getRgbValue());
                 }
             }
         }
+    }
+
+    private static boolean positionInScreen(int nx, int ny) {
+        return nx >= 0 && nx < GAME_WIDTH && ny >= 0 && ny < GAME_HEIGHT;
+    }
+
+    private static boolean pixelTransparent(Pixel p) {
+        return p.getRgbValue() == Color.MAGENTA.getRGB();
+    }
+
+    private Pixel getPixelFromRank(Sprite sprite, int i) {
+        int q = i / sprite.getWidth();
+        int r = i % sprite.getWidth();
+        int rp = (sprite.getImage().getWidth() * q) + r + (sprite.getFrame() * sprite.getWidth());
+        return sprite.getImage().getPixels()[rp];
     }
 
     public void drawBackground(byte[] frame) {

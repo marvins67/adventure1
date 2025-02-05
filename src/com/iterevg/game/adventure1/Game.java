@@ -1,8 +1,6 @@
 package com.iterevg.game.adventure1;
 
-import com.iterevg.game.adventure1.graphics.Image;
-import com.iterevg.game.adventure1.graphics.ScreenRenderer;
-import com.iterevg.game.adventure1.graphics.Sprite;
+import com.iterevg.game.adventure1.graphics.*;
 
 import javax.swing.*;
 import java.awt.event.KeyAdapter;
@@ -17,11 +15,17 @@ public class Game extends MouseAdapter {
     private JFrame frame;
     private ScreenRenderer screenRenderer;
     private Image background;
-    private Sprite sprite;
+    private Actor actor;
     private volatile boolean running = true;
 
-    int mouseX = 580;
-    int mouseY = 147;
+    int mouseX = 145 * GAME_SCALE;
+    int mouseY = 36 * GAME_SCALE;
+    int destX = 0;
+    int destY = 0;
+    boolean mouseClicked = false;
+    boolean doWalk = false;
+    boolean moveX = false;
+    boolean moveY = false;
 
    public void init(){
        screenRenderer = new ScreenRenderer();
@@ -45,12 +49,18 @@ public class Game extends MouseAdapter {
        background = new Image();
        background.read("gk_back.png");
 
+       actor = new Actor();
+       actor.setPosition(new Position(mouseX, mouseY));
+
        Image image = new Image();
        image.read("spr_gk1.png");
-       sprite = new Sprite();
+       Sprite sprite = new Sprite();
        sprite.setImage(image);
-       sprite.setX(580);
-       sprite.setY(147);
+       sprite.setWidth(SPR_WIDTH);
+       sprite.setHeight(SPR_HEIGHT);
+
+       actor.sprites[0] = sprite;
+       actor.sprites[2] = invertSprite(sprite);
    }
 
     public void run() {
@@ -70,7 +80,7 @@ public class Game extends MouseAdapter {
             while (frameRateLimit >= 1) {
                 frameRateLimit--;
                 screenRenderer.drawBackground(background.getBytes());
-                screenRenderer.drawSprite(sprite);
+                screenRenderer.drawActor(actor);
                 screenRenderer.repaint();
                 updateScreen();
             }
@@ -88,33 +98,80 @@ public class Game extends MouseAdapter {
 
     private void updateScreen() {
        //Mise à jour des données du jeu
-        int v = 2 * SCALE;
-        boolean moveX = Math.abs(sprite.getX() - mouseX) >= v;
-        boolean moveY = Math.abs(sprite.getY() - mouseY) >= v;
-        if (moveX || moveY) {
-            System.out.println("click : " + mouseX + ", " + mouseY + " sprite : " + sprite.getX() + ", " + sprite.getY());
-            sprite.incFrame();
-            sprite.setWalk();
+        int v = 2 * GAME_SCALE;
+        if (mouseClicked) {
+            destX = mouseX;
+            destY = mouseY;
+            mouseClicked = false;
+            moveX = Math.abs(footX() - destX) >= v;
+            moveY = Math.abs(footY() - destY) >= v;
+            if (moveX || moveY) {
+                doWalk = true;
+            }
+        }
+
+        if (doWalk) {
+            moveX = Math.abs(footX() - destX) >= v;
+            moveY = Math.abs(footY() - destY) >= v;
+            System.out.println("click : " + destX + ", " + destY + " sprite : " + footX() + ", " + footY());
+            actor.getSprite().incFrame();
+            actor.getSprite().setWalk();
             if (moveX) {
-                int dx = v * (sprite.getX() < mouseX ? 1 : -1);
-                sprite.setX(sprite.getX() + dx);
+                int dx = v * (footX() < destX ? 1 : -1);
+                actor.setDirection(dx > 0 ? 0 : 2);
+                actor.getPosition().setX(actor.getPosition().getX() + dx);
             }
             if (moveY) {
-                int dy = v * (sprite.getY() < mouseY ? 1 : -1);
-                sprite.setY(sprite.getY() + dy);
+                int sens = (footY() < destY ? 1 : -1);
+                int dy = v * sens;
+                actor.getPosition().setY(actor.getPosition().getY() + dy);
             }
-        } else {
-            sprite.setNoWalk();
+            if (!moveX && !moveY) {
+                doWalk = false;
+                actor.getSprite().setNoWalk();
+            }
         }
+    }
+
+    //TODO : On recalcule trop de fois footX et footY
+    private int footX() {
+        return actor.getPosition().getX() + (actor.getSprite().getWidth() / 2);
+    }
+
+    private int footY() {
+        return actor.getPosition().getY() + actor.getSprite().getHeight() - 4;
+    }
+
+
+    private Sprite invertSprite(Sprite sprite) {
+        Sprite invertedSprite = new Sprite();
+        invertedSprite.setWidth(sprite.getWidth());
+        invertedSprite.setHeight(sprite.getHeight());
+
+        int size = sprite.getWidth();
+        int length = sprite.getImage().getPixels().length;
+        Image invertedImage = new Image();
+        Pixel[] invertedPixel = new Pixel[length];
+        for (int i = 0; i < length; i++) {
+            int newPosition = (i / size) * size + (size - 1 - (i % size));
+            Pixel p = new Pixel(sprite.getImage().getPixels()[i].getRgbValue());
+            invertedPixel[newPosition] = p;
+        }
+        invertedImage.setHeight(sprite.getImage().getHeight());
+        invertedImage.setWidth((sprite.getImage().getWidth()));
+        invertedImage.setPixels(invertedPixel);
+        invertedSprite.setImage(invertedImage);
+        return invertedSprite;
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         mouseX = e.getX();
         mouseY = e.getY();
+        mouseClicked = true;
     }
 
-    public void stop(){
+    public void stop() {
        frame.dispose();
        System.out.println("That's all folks!");
     }

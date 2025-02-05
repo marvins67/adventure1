@@ -4,7 +4,7 @@ public class Sprite {
     private Image image;
     private int width;
     private int height;
-    private int frame = 1;
+    private int frame = 0;
     private boolean isWalking = false;
 
     public Image getImage() {

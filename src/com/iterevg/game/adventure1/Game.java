@@ -18,8 +18,8 @@ public class Game extends MouseAdapter {
     private Actor actor;
     private volatile boolean running = true;
 
-    int mouseX = 145 * GAME_SCALE;
-    int mouseY = 36 * GAME_SCALE;
+    int mouseX = 145;
+    int mouseY = 36;
     int destX = 0;
     int destY = 0;
     boolean mouseClicked = false;
@@ -98,10 +98,10 @@ public class Game extends MouseAdapter {
 
     private void updateScreen() {
        //Mise à jour des données du jeu
-        int v = 2 * GAME_SCALE;
+        int v = 3;
         if (mouseClicked) {
-            destX = mouseX;
-            destY = mouseY;
+            destX = mouseX / GAME_SCALE;
+            destY = mouseY / GAME_SCALE;
             mouseClicked = false;
             moveX = Math.abs(footX() - destX) >= v;
             moveY = Math.abs(footY() - destY) >= v;
@@ -113,7 +113,7 @@ public class Game extends MouseAdapter {
         if (doWalk) {
             moveX = Math.abs(footX() - destX) >= v;
             moveY = Math.abs(footY() - destY) >= v;
-            System.out.println("click : " + destX + ", " + destY + " sprite : " + footX() + ", " + footY());
+            //System.out.println("click : " + destX + ", " + destY + " sprite : " + footX() + ", " + footY());
             actor.getSprite().incFrame();
             actor.getSprite().setWalk();
             if (moveX) {
@@ -139,7 +139,7 @@ public class Game extends MouseAdapter {
     }
 
     private int footY() {
-        return actor.getPosition().getY() + actor.getSprite().getHeight() - 4;
+        return actor.getPosition().getY() + actor.getSprite().getHeight() - 1;
     }
 
 

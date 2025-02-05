@@ -48,11 +48,7 @@ public class Image {
 
     public void read(String filePath) {
         try {
-            // Charger l'image BMP
             BufferedImage image = ImageIO.read(new File(filePath));
-            if(Constants.GAME_SCALE > 1) {
-                image = resizeImage(image);
-            }
             width = image.getWidth();
             height = image.getHeight();
             pixels = new Pixel[width * height];
@@ -60,24 +56,12 @@ public class Image {
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     Pixel p = new Pixel(image.getRGB(x, y));
-                    pixels[x + (width *y)] = p;
+                    pixels[x + (width * y)] = p;
                 }
             }
             bytes = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public BufferedImage resizeImage(BufferedImage originalImage) {
-        int newWidth = originalImage.getWidth() * Constants.GAME_SCALE;
-        int newHeight = originalImage.getHeight() * Constants.GAME_SCALE;
-        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
-
-        Graphics2D g2d = resizedImage.createGraphics();
-        g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
-        g2d.dispose(); // Libère les ressources graphiques
-
-        return resizedImage;
     }
 }

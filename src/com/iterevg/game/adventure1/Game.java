@@ -14,7 +14,7 @@ public class Game extends MouseAdapter {
 
     private JFrame frame;
     private ScreenRenderer screenRenderer;
-    private Image background;
+    private Background background;
     private Actor actor;
     private volatile boolean running = true;
 
@@ -46,21 +46,15 @@ public class Game extends MouseAdapter {
            }
        });
 
-       background = new Image();
+       background = new Background();
        background.read("gk_back.png");
 
        actor = new Actor();
+       actor.addSprite("spr_gk1.png", 0, false);
+       actor.addSprite("spr_gk1.png", 2, true);
+       actor.addSprite("spr_gk2.png", 1, false);
+       actor.addSprite("spr_gk3.png", 3, false);
        actor.setPosition(new Position(mouseX, mouseY));
-
-       Image image = new Image();
-       image.read("spr_gk1.png");
-       Sprite sprite = new Sprite();
-       sprite.setImage(image);
-       sprite.setWidth(SPR_WIDTH);
-       sprite.setHeight(SPR_HEIGHT);
-
-       actor.sprites[0] = sprite;
-       actor.sprites[2] = invertSprite(sprite);
    }
 
     public void run() {
@@ -81,6 +75,7 @@ public class Game extends MouseAdapter {
                 frameRateLimit--;
                 screenRenderer.drawBackground(background.getBytes());
                 screenRenderer.drawActor(actor);
+                //screenRenderer.drawSprite(actor.getSprites()[3]);
                 screenRenderer.repaint();
                 updateScreen();
             }
@@ -142,30 +137,8 @@ public class Game extends MouseAdapter {
         return actor.getPosition().getY() + actor.getSprite().getHeight() - 1;
     }
 
-
-    private Sprite invertSprite(Sprite sprite) {
-        Sprite invertedSprite = new Sprite();
-        invertedSprite.setWidth(sprite.getWidth());
-        invertedSprite.setHeight(sprite.getHeight());
-
-        int size = sprite.getWidth();
-        int length = sprite.getImage().getPixels().length;
-        Image invertedImage = new Image();
-        Pixel[] invertedPixel = new Pixel[length];
-        for (int i = 0; i < length; i++) {
-            int newPosition = (i / size) * size + (size - 1 - (i % size));
-            Pixel p = new Pixel(sprite.getImage().getPixels()[i].getRgbValue());
-            invertedPixel[newPosition] = p;
-        }
-        invertedImage.setHeight(sprite.getImage().getHeight());
-        invertedImage.setWidth((sprite.getImage().getWidth()));
-        invertedImage.setPixels(invertedPixel);
-        invertedSprite.setImage(invertedImage);
-        return invertedSprite;
-    }
-
     @Override
-    public void mouseClicked(MouseEvent e) {
+    public void mouseReleased(MouseEvent e) {
         mouseX = e.getX();
         mouseY = e.getY();
         mouseClicked = true;

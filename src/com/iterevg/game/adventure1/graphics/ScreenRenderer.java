@@ -35,8 +35,21 @@ public class ScreenRenderer extends JPanel {
         }
     }
 
+    public void drawSprite(Sprite sprite) {
+        for (int j = 0; j < sprite.getHeight(); j++) {
+            for (int i = 0; i < sprite.getWidth(); i++) {
+                try {
+                    if (positionInScreen(i, j)) {
+                        bufferedImage.setRGB(i, j, sprite.getPixels()[i][j].getRgbValue());
+                    }
+                } catch (Exception e) {
+                    System.out.print("Erreur");
+                }
+            }
+        }
+    }
     private static boolean positionInScreen(int nx, int ny) {
-        return nx >= 0 && nx < GAME_WIDTH && ny >= 0 && ny < GAME_HEIGHT;
+        return nx >= 0 && nx < SCR_WIDTH && ny >= 0 && ny < SCR_HEIGHT;
     }
 
     private static boolean pixelTransparent(Pixel p) {
@@ -46,8 +59,7 @@ public class ScreenRenderer extends JPanel {
     private Pixel getPixelFromRank(Sprite sprite, int i) {
         int q = i / sprite.getWidth();
         int r = i % sprite.getWidth();
-        int rp = (sprite.getImage().getWidth() * q) + r + (sprite.getFrame() * sprite.getWidth());
-        return sprite.getImage().getPixels()[rp];
+        return sprite.getPixels()[r][q];
     }
 
     public void drawBackground(byte[] frame) {

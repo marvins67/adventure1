@@ -1,15 +1,12 @@
 package com.iterevg.game.adventure1.graphics;
 
-import com.iterevg.game.adventure1.Constants;
-
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
-public class Image {
+public class Background {
     Pixel[] pixels;
 
     byte[] bytes;

@@ -17,13 +17,12 @@ public class Actor {
     public Actor() {
     }
 
-    public void addSprite(String imagePath, int direction, boolean invert) {
+    public void addSprite(String imagePath, int direction) {
         Sprite sprite = new Sprite();
         sprite.getSpriteFromFile(imagePath);
         sprite.setWidth(SPR_WIDTH);
         sprite.setHeight(SPR_HEIGHT);
-
-        this.sprites[direction] = invert ? invertSprite(sprite) : sprite;
+        this.sprites[direction] = sprite;
     }
 
     public Sprite getSprite(){
@@ -48,23 +47,5 @@ public class Actor {
 
     public void setPosition(Position position) {
         this.position = position;
-    }
-
-    private Sprite invertSprite(Sprite sprite) {
-        Sprite invertedSprite = new Sprite();
-        invertedSprite.setWidth(sprite.getWidth());
-        invertedSprite.setHeight(sprite.getHeight());
-        Pixel[][] invertedPixel = new Pixel[sprite.getWidth()][sprite.getHeight()];
-
-        for (int j = 0; j < sprite.getHeight(); j++) {
-            for (int i = 0; i < sprite.getWidth(); i++) {
-                Pixel p = new Pixel(sprite.getPixels()[i][j].getRgbValue());
-                invertedPixel[sprite.getWidth() - i - 1][j] = p;
-            }
-        }
-        invertedSprite.setHeight(sprite.getHeight());
-        invertedSprite.setWidth((sprite.getWidth()));
-        invertedSprite.setPixels(invertedPixel);
-        return invertedSprite;
     }
 }

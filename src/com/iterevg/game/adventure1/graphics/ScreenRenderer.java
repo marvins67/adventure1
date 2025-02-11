@@ -20,7 +20,7 @@ public class ScreenRenderer extends JPanel {
         this.fps = fps;
     }
 
-    public void drawActor(Actor actor) {
+    public void drawActor(Actor actor, Pixel[][] mask) {
         for (int i = 0; i < Constants.SPR_SIZE; i++) {
             Pixel p = getPixelFromRank(actor.getSprite(), i);
             if (!pixelTransparent(p)) {
@@ -28,11 +28,15 @@ public class ScreenRenderer extends JPanel {
                 //int ny = p.getPosition().getY() + actor.getPosition().getY();
                 int nx = i % actor.getSprite().getWidth() + actor.getPosition().getX();
                 int ny = i / actor.getSprite().getWidth() + actor.getPosition().getY();
-                if (positionInScreen(nx, ny)) {
+                if (positionInScreen(nx, ny) && !pixelHidden(mask[nx][ny])) {
                     bufferedImage.setRGB(nx, ny, p.getRgbValue());
                 }
             }
         }
+    }
+
+    private boolean pixelHidden(Pixel p) {
+        return p.getRgbValue() == Color.BLACK.getRGB();
     }
 
     public void drawSprite(Sprite sprite) {
@@ -49,7 +53,7 @@ public class ScreenRenderer extends JPanel {
         }
     }
     private static boolean positionInScreen(int nx, int ny) {
-        return nx >= 0 && nx < SCR_WIDTH && ny >= 0 && ny < SCR_HEIGHT;
+        return nx >= 0 && nx < SCR_WIDTH && ny >= 0 && ny < 124;
     }
 
     private static boolean pixelTransparent(Pixel p) {
@@ -58,7 +62,7 @@ public class ScreenRenderer extends JPanel {
 
     private Pixel getPixelFromRank(Sprite sprite, int i) {
         int q = i / sprite.getWidth();
-        int r = i % sprite.getWidth();
+        int r = i % sprite.getWidth() + (sprite.getFrame()*sprite.getWidth());
         return sprite.getPixels()[r][q];
     }
 

@@ -47,13 +47,13 @@ public class Game extends MouseAdapter {
        });
 
        background = new Background();
-       background.read("gk_back.png");
+       background.read("gk_back.png", "gk_back_mask.png");
 
        actor = new Actor();
-       actor.addSprite("spr_gk1.png", 0, false);
-       actor.addSprite("spr_gk1.png", 2, true);
-       actor.addSprite("spr_gk2.png", 1, false);
-       actor.addSprite("spr_gk3.png", 3, false);
+       actor.addSprite("spr_gk0.png", 0);
+       actor.addSprite("spr_gk1.png", 1);
+       actor.addSprite("spr_gk2.png", 2);
+       actor.addSprite("spr_gk3.png", 3);
        actor.setPosition(new Position(mouseX, mouseY));
    }
 
@@ -74,7 +74,7 @@ public class Game extends MouseAdapter {
             while (frameRateLimit >= 1) {
                 frameRateLimit--;
                 screenRenderer.drawBackground(background.getBytes());
-                screenRenderer.drawActor(actor);
+                screenRenderer.drawActor(actor, background.getMask());
                 //screenRenderer.drawSprite(actor.getSprites()[3]);
                 screenRenderer.repaint();
                 updateScreen();
@@ -106,20 +106,20 @@ public class Game extends MouseAdapter {
         }
 
         if (doWalk) {
-            moveX = Math.abs(footX() - destX) >= v;
-            moveY = Math.abs(footY() - destY) >= v;
+            moveX = Math.abs(footX() - destX) >= v && actor.getPosition().getX() > 0 && actor.getPosition().getX() < background.getWidth();
+            moveY = Math.abs(footY() - destY) >= v && actor.getPosition().getY() > 0 && actor.getPosition().getY() < background.getHeight();
             //System.out.println("click : " + destX + ", " + destY + " sprite : " + footX() + ", " + footY());
             actor.getSprite().incFrame();
             actor.getSprite().setWalk();
+            if (moveY) {
+                int dy = v * (footY() < destY ? 1 : -1);
+                actor.setDirection(dy > 0 ? 1 : 3);
+                actor.getPosition().setY(actor.getPosition().getY() + dy);
+            }
             if (moveX) {
                 int dx = v * (footX() < destX ? 1 : -1);
                 actor.setDirection(dx > 0 ? 0 : 2);
                 actor.getPosition().setX(actor.getPosition().getX() + dx);
-            }
-            if (moveY) {
-                int sens = (footY() < destY ? 1 : -1);
-                int dy = v * sens;
-                actor.getPosition().setY(actor.getPosition().getY() + dy);
             }
             if (!moveX && !moveY) {
                 doWalk = false;

@@ -8,7 +8,7 @@ public class Constants {
     public static final int SCR_HEIGHT = 200;
     public static final int GAME_WIDTH = SCR_WIDTH * GAME_SCALE;
     public static final int GAME_HEIGHT = SCR_HEIGHT * GAME_SCALE;
-    public static final int SPR_WIDTH = 44;
+    public static final int SPR_WIDTH = 43;
     public static final int SPR_HEIGHT = 56;
     public static final int SPR_SIZE = SPR_WIDTH * SPR_HEIGHT;
     public static final double FRAMERATE = 8.0;

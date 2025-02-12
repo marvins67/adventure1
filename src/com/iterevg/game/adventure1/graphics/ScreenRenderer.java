@@ -14,18 +14,21 @@ import static com.iterevg.game.adventure1.Constants.*;
 public class ScreenRenderer extends JPanel {
 
     private int fps = 0;
-    private final static BufferedImage bufferedImage = new BufferedImage(SCR_WIDTH, SCR_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+    private String lastAction;
+    private static final BufferedImage bufferedImage = new BufferedImage(SCR_WIDTH, SCR_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 
     public void setFps(int fps) {
         this.fps = fps;
+    }
+
+    public void setLastAction(String lastAction) {
+        this.lastAction = lastAction;
     }
 
     public void drawActor(Actor actor, Pixel[][] mask) {
         for (int i = 0; i < Constants.SPR_SIZE; i++) {
             Pixel p = getPixelFromRank(actor.getSprite(), i);
             if (!pixelTransparent(p)) {
-                //int nx = (p.getPosition().getX() % actor.getSpriteWR().getWidth()) + actor.getPosition().getX();
-                //int ny = p.getPosition().getY() + actor.getPosition().getY();
                 int nx = i % actor.getSprite().getWidth() + actor.getPosition().getX();
                 int ny = i / actor.getSprite().getWidth() + actor.getPosition().getY();
                 if (positionInScreen(nx, ny) && !pixelHidden(mask[nx][ny])) {
@@ -33,10 +36,6 @@ public class ScreenRenderer extends JPanel {
                 }
             }
         }
-    }
-
-    private boolean pixelHidden(Pixel p) {
-        return p.getRgbValue() == Color.BLACK.getRGB();
     }
 
     public void drawSprite(Sprite sprite) {
@@ -52,8 +51,13 @@ public class ScreenRenderer extends JPanel {
             }
         }
     }
+
     private static boolean positionInScreen(int nx, int ny) {
         return nx >= 0 && nx < SCR_WIDTH && ny >= 0 && ny < 124;
+    }
+
+    private boolean pixelHidden(Pixel p) {
+        return p.getRgbValue() == Color.BLACK.getRGB();
     }
 
     private static boolean pixelTransparent(Pixel p) {
@@ -87,6 +91,7 @@ public class ScreenRenderer extends JPanel {
         // Dessiner les FPS
         g.setColor(Color.WHITE); // Couleur du texte (blanc)
         g.drawString("FPS: " + fps, 10, 20); // Afficher les FPS en haut à gauche
+        g.drawString("Last action: " + lastAction, 10, GAME_HEIGHT - 100);
     }
 
     public BufferedImage resizeImage(BufferedImage originalImage) {

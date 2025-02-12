@@ -3,7 +3,7 @@ package com.iterevg.game.adventure1;
 public class Constants {
 
     public static final String NAME = "Adventure 1";
-    public static final int GAME_SCALE = 6;
+    public static final int GAME_SCALE = 4;
     public static final int SCR_WIDTH = 320;
     public static final int SCR_HEIGHT = 200;
     public static final int GAME_WIDTH = SCR_WIDTH * GAME_SCALE;

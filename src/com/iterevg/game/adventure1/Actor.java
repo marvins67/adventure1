@@ -1,6 +1,5 @@
 package com.iterevg.game.adventure1;
 
-import com.iterevg.game.adventure1.graphics.Pixel;
 import com.iterevg.game.adventure1.graphics.Position;
 import com.iterevg.game.adventure1.graphics.Sprite;
 

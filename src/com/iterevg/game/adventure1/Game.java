@@ -3,6 +3,7 @@ package com.iterevg.game.adventure1;
 import com.iterevg.game.adventure1.graphics.*;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -12,8 +13,10 @@ import static com.iterevg.game.adventure1.Constants.*;
 
 public class Game extends MouseAdapter {
 
-    private JFrame frame;
+    private JFrame game;
     private ScreenRenderer screenRenderer;
+    private JFrame debug;
+    private DebugRenderer debugRenderer;
     private Background background;
     private Actor actor;
     private volatile boolean running = true;
@@ -25,33 +28,43 @@ public class Game extends MouseAdapter {
     private boolean doWalk = false;
 
     public void init(){
-       screenRenderer = new ScreenRenderer();
-       screenRenderer.addMouseListener(this);
+        screenRenderer = new ScreenRenderer();
+        screenRenderer.addMouseListener(this);
 
-       frame = new JFrame(Constants.NAME);
-       frame.add(screenRenderer);
-       frame.setSize(GAME_WIDTH, GAME_HEIGHT);
-       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-       frame.setResizable(false);
-       frame.setVisible(true);
-       frame.addKeyListener(new KeyAdapter() {
+        game = new JFrame(Constants.NAME);
+        game.add(screenRenderer);
+        game.setSize(GAME_WIDTH, GAME_HEIGHT);
+        game.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        game.setResizable(false);
+        game.setVisible(true);
+        game.addKeyListener(new KeyAdapter() {
            @Override
            public void keyPressed(KeyEvent e) {
-               if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                   running = false;
-               }
-           }
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    running = false;
+                }
+            }
        });
 
-       background = new Background();
-       background.read("gk_back.png", "gk_back_mask.png");
+        debugRenderer = new DebugRenderer();
+        debug = new JFrame("Debug");
+        debug.setLocation(800, 0);
+        debug.add(debugRenderer);
+        debug.setSize(250, 800);
+        debug.setBackground(Color.BLACK);
+        debug.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        debug.setResizable(false);
+        debug.setVisible(true);
 
-       actor = new Actor();
-       actor.addSprite("spr_gk0.png", 0);
-       actor.addSprite("spr_gk1.png", 1);
-       actor.addSprite("spr_gk2.png", 2);
-       actor.addSprite("spr_gk3.png", 3);
-       actor.setPosition(new Position(mouseX, mouseY));
+        background = new Background();
+        background.read("gk_back");
+
+        actor = new Actor();
+        actor.addSprite("spr_gk0.png", 0);
+        actor.addSprite("spr_gk1.png", 1);
+        actor.addSprite("spr_gk2.png", 2);
+        actor.addSprite("spr_gk3.png", 3);
+        actor.setPosition(new Position(mouseX, mouseY));
    }
 
     public void run() {
@@ -73,6 +86,7 @@ public class Game extends MouseAdapter {
                 screenRenderer.drawBackground(background.getBytes());
                 screenRenderer.drawActor(actor, background.getMask());
                 screenRenderer.repaint();
+                debugRenderer.repaint();
                 updateEngine();
             }
 
@@ -81,7 +95,7 @@ public class Game extends MouseAdapter {
             // Affiche les FPS toutes les secondes
             if (deltaTime >= Constants.ONE_SECOND ){
                 deltaTime = 0;
-                screenRenderer.setFps(frames);
+                debugRenderer.setFps(frames);
                 frames = 0;
             }
         }
@@ -97,6 +111,8 @@ public class Game extends MouseAdapter {
         if (mouseClicked) {
             destX = mouseX / GAME_SCALE;
             destY = mouseY / GAME_SCALE;
+            boolean isReachable = background.isReachable(destX, destY);
+            debugRenderer.addLastAction("Clic : " + destX + " ; " + destY + " reachable = " + isReachable);
             mouseClicked = false;
             moveX = Math.abs(footX - destX) >= v;
             moveY = Math.abs(footY - destY) >= v;
@@ -141,11 +157,10 @@ public class Game extends MouseAdapter {
         mouseX = e.getX();
         mouseY = e.getY();
         mouseClicked = true;
-        screenRenderer.setLastAction("Clic : " + mouseX + " ; " + mouseY);
     }
 
     public void stop() {
-       frame.dispose();
+       game.dispose();
        System.out.println("That's all folks!");
     }
 }

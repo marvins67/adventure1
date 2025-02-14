@@ -12,18 +12,7 @@ import java.util.Arrays;
 import static com.iterevg.game.adventure1.Constants.*;
 
 public class ScreenRenderer extends JPanel {
-
-    private int fps = 0;
-    private String lastAction;
     private static final BufferedImage bufferedImage = new BufferedImage(SCR_WIDTH, SCR_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
-
-    public void setFps(int fps) {
-        this.fps = fps;
-    }
-
-    public void setLastAction(String lastAction) {
-        this.lastAction = lastAction;
-    }
 
     public void drawActor(Actor actor, Pixel[][] mask) {
         for (int i = 0; i < Constants.SPR_SIZE; i++) {
@@ -85,13 +74,7 @@ public class ScreenRenderer extends JPanel {
         } else {
             bf = bufferedImage;
         }
-
         g.drawImage(bf, 0, 0, this);
-
-        // Dessiner les FPS
-        g.setColor(Color.WHITE); // Couleur du texte (blanc)
-        g.drawString("FPS: " + fps, 10, 20); // Afficher les FPS en haut à gauche
-        g.drawString("Last action: " + lastAction, 10, GAME_HEIGHT - 100);
     }
 
     public BufferedImage resizeImage(BufferedImage originalImage) {

@@ -24,6 +24,8 @@ public class Game extends MouseAdapter {
     private int mouseY = 36;
     private int destX = 0;
     private int destY = 0;
+    private double a = 0;
+    private double b = 0;
     private boolean mouseClicked = false;
     private boolean doWalk = false;
 
@@ -49,17 +51,17 @@ public class Game extends MouseAdapter {
 
         debugRenderer = new DebugRenderer();
         debug = new JFrame("Debug");
-        debug.setLocation(800, 0);
+        debug.setLocation(1024, 0);
         debug.add(debugRenderer);
-        debug.setSize(250, 800);
+        debug.setSize(250, 1024);
         debug.setBackground(Color.BLACK);
         debug.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        debug.setResizable(false);
+        debug.setResizable(true);
         debug.setVisible(true);
 
         background = new Background();
         background.read("gk_back");
-        background.disableMasking();
+        //background.disableMasking();
 
         actGk = new Actor();
         actGk.addSprites("gk");
@@ -111,9 +113,17 @@ public class Game extends MouseAdapter {
             destX = mouseX / GAME_SCALE;
             destY = mouseY / GAME_SCALE;
 
+            //Calcule droite entre départ et arrivée:
+            // y = ax + b
+            // x = (y - b) /a
+            a = (double) ((-1)*destY - (-1)*footY) / (destX - footX);
+            b = (-1)*footY - (a * footX);
+            //debugRenderer.addAction("a="+a+" b="+b);
             screenRenderer.addCross("clic", destX, destY);
 
             boolean isReachable = background.isReachable(destX, destY);
+            debugRenderer.addAction("Actor : " + actGk.getPosition().getX() + " ; " + actGk.getPosition().getY());
+            debugRenderer.addAction("Foot : " + footX + " ; " + footY);
             debugRenderer.addAction("Clic : " + destX + " ; " + destY + " reachable = " + isReachable);
             mouseClicked = false;
             moveX = Math.abs(footX - destX) >= v;
@@ -124,51 +134,32 @@ public class Game extends MouseAdapter {
         }
 
         if (doWalk) {
+            //debugRenderer.addAction("Actor : " + actGk.getPosition().getX() + " ; " + actGk.getPosition().getY());
+            //debugRenderer.addAction("Foot : " + footX + " ; " + footY);
+            int dx = v * (footX < destX ? 1 : -1);
+            int dy = v * (footY < destY ? 1 : -1);
 
-            moveX = Math.abs(footX - destX) >= v && actGk.getPosition().getX() >= 0 && actGk.getPosition().getX() < background.getWidth();
-            moveY = Math.abs(footY - destY) >= v && actGk.getPosition().getY() >= (1 - actGk.getSprite().getHeight()) && actGk.getPosition().getY() < background.getHeight();
-            actGk.getSprite().incFrame();
-            actGk.getSprite().setWalk();
+            int xnx = footX + dx;
+            int xny = (int) Math.abs((a * xnx) + b);
+            moveX = background.isReachable(xnx, xny) && Math.abs(footX - destX) >= v && actGk.getPosition().getX() >= 0 && actGk.getPosition().getX() < background.getWidth();
 
-            //Calcule droite entre départ et arrivée:
-            // y = ax + b
-            // x = (y - b) /a
-            double a = (double) ((-1)*destY - (-1)*footY) / (destX - footX);
-            double b = (-1)*footY - (a * footX) + 34;
-            debugRenderer.addAction("a="+a+" b="+b);
+            int yny = footY + dy;
+            int ynx = (int) (((-1) * yny - b) / a);
+            moveY = background.isReachable(ynx, yny) && Math.abs(footY - destY) >= v && actGk.getPosition().getY() >= (1 - actGk.getSprite().getHeight()) && actGk.getPosition().getY() < background.getHeight();
+
             if (moveX || moveY) {
+                actGk.getSprite().incFrame();
+                actGk.getSprite().setWalk();
                 if (Math.abs(footX - destX) > Math.abs(footY - destY)) {
-                    int dx = v * (footX < destX ? 1 : -1);
                     actGk.setDirection(dx > 0 ? 0 : 2);
-                    actGk.getPosition().setX(actGk.getPosition().getX() + dx);
-                    actGk.getPosition().setY((int) Math.abs((a * actGk.getPosition().getX()) + b));
+                    actGk.getPosition().setX(invFootX(xnx));
+                    actGk.getPosition().setY(invFootY(xny));
                 } else {
-                    int dy = v * (footY < destY ? 1 : -1);
                     actGk.setDirection(dy > 0 ? 1 : 3);
-                    actGk.getPosition().setY(actGk.getPosition().getY() + dy);
-                    actGk.getPosition().setX((int) (((-1) * actGk.getPosition().getY() - b) / a));
+                    actGk.getPosition().setX(invFootX(ynx));
+                    actGk.getPosition().setY(invFootY(yny));
                 }
-            }
-
-            /*
-            if (moveY) {
-                int dy = v * (footY < destY ? 1 : -1);
-                actGk.setDirection(dy > 0 ? 1 : 3);
-                if (background.isReachable(footX, footY+ dy)) {
-                    actGk.getPosition().setY(actGk.getPosition().getY() + dy);
-                }
-            }
-            if (moveX) {
-                int dx = v * (footX < destX ? 1 : -1);
-                actGk.setDirection(dx > 0 ? 0 : 2);
-
-                if (background.isReachable(footX + dx, footY)) {
-                    actGk.getPosition().setX(actGk.getPosition().getX() + dx);
-                }
-            }
-
-             */
-            if (!moveX && !moveY) {
+            } else  {
                 doWalk = false;
                 actGk.getSprite().setNoWalk();
             }
@@ -179,8 +170,16 @@ public class Game extends MouseAdapter {
         return actGk.getPosition().getX() + (actGk.getSprite().getWidth() / 2);
     }
 
+    private int invFootX(int x) {
+        return x - (actGk.getSprite().getWidth() / 2);
+    }
+
     private int footY() {
         return actGk.getPosition().getY() + actGk.getSprite().getHeight() - 1;
+    }
+
+    private int invFootY(int y) {
+        return y - actGk.getSprite().getHeight() + 1;
     }
 
     @Override

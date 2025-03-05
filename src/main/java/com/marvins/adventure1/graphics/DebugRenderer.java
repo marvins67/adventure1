@@ -14,7 +14,7 @@ public class DebugRenderer extends JPanel {
 
     private int fps = 0;
     private List<String> lines = new ArrayList<>();
-    private static final BufferedImage bufferedImage = new BufferedImage(SCR_WIDTH, SCR_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+    private static final BufferedImage bufferedImage = new BufferedImage(SCR_WIDTH, 1024, BufferedImage.TYPE_3BYTE_BGR);
 
     public void setFps(int fps) {
         this.fps = fps;
@@ -22,20 +22,14 @@ public class DebugRenderer extends JPanel {
 
     public void addAction(String action) {
         this.lines.add(action);
+        System.err.println(action);
     }
 
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        BufferedImage bf;
-        if(Constants.GAME_SCALE > 1) {
-            bf = resizeImage(bufferedImage);
-        } else {
-            bf = bufferedImage;
-        }
-
-        g.drawImage(bf, 0, 0, this);
+        g.drawImage(bufferedImage, 0, 0, this);
 
         // Dessiner les FPS
         g.setColor(Color.WHITE); // Couleur du texte (blanc)
@@ -46,17 +40,5 @@ public class DebugRenderer extends JPanel {
             g.drawString(lines.get(i), 10, h);
             h = h + 15;
         }
-    }
-
-    public BufferedImage resizeImage(BufferedImage originalImage) {
-        int newWidth = originalImage.getWidth() * Constants.GAME_SCALE;
-        int newHeight = originalImage.getHeight() * Constants.GAME_SCALE;
-        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
-
-        Graphics2D g2d = resizedImage.createGraphics();
-        g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
-        g2d.dispose(); // Libère les ressources graphiques
-
-        return resizedImage;
     }
 }

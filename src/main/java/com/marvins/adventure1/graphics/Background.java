@@ -4,8 +4,8 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Background {
     byte[] bytes;
@@ -14,6 +14,8 @@ public class Background {
     int width;
     int height;
     private boolean masking = true;
+
+    boolean[][] walkable;
 
     public byte[] getBytes() {
         return bytes;
@@ -35,6 +37,10 @@ public class Background {
         return height;
     }
 
+    public boolean[][] getWalkable() {
+        return walkable;
+    }
+
     public void read(String filename) {
         String backimg = filename + ".png";
         String maskimg = filename + "_mask.png";
@@ -45,26 +51,47 @@ public class Background {
             this.height = image.getHeight();
             this.bytes = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
             this.mask = getPixels(maskimg);
+            this.walkable = new boolean[this.width][this.height];
             this.path = getPixels(pathimg);
+            for (int y = 0; y < this.height; y++) {
+                for (int x = 0; x < this.width; x++) {
+                    walkable[x][y] = isReachable(x, y);
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private Pixel[][] getPixels(String img) throws IOException {
-        BufferedImage bi = ImageIO.read((getClass().getClassLoader().getResourceAsStream("background/"+img)));
-        Pixel[][] pixels = new Pixel[this.width][this.height];
-        for (int y = 0; y < this.height; y++) {
-            for (int x = 0; x < this.width; x++) {
-                Pixel p = new Pixel(bi.getRGB(x, y));
-                pixels[x][y] = p;
+        try {
+            InputStream is = (getClass().getClassLoader().getResourceAsStream("background/" + img));
+            if (is == null) {
+                throw new IOException();
             }
+            BufferedImage bi = ImageIO.read(is);
+            Pixel[][] pixels = new Pixel[this.width][this.height];
+            for (int y = 0; y < this.height; y++) {
+                for (int x = 0; x < this.width; x++) {
+                    Pixel p = new Pixel(bi.getRGB(x, y));
+                    pixels[x][y] = p;
+                }
+            }
+            return pixels;
+        } catch (IOException e) {
+            System.err.println("Fichier background/" + img + " manquant");
         }
-        return pixels;
+        return null;
     }
 
     public boolean isReachable(int x, int y) {
-        return x>=0 && x<this.width && y>=0 && y< this.height && this.path[x][y].getRgbValue() == Color.WHITE.getRGB();
+        try {
+            boolean b = x >= 0 && x < this.width && y >= 0 && y < this.height && this.path[x][y].getRgbValue() == Color.WHITE.getRGB();
+            return b;
+        } catch (NullPointerException npe) {
+            System.err.print("");
+        }
+        return false;
     }
 
     public void disableMasking() {
